@@ -10,7 +10,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="feal_main.cpp">
+    <ClCompile Include="sample_code.cpp">
       <Filter>Image Loader</Filter>
     </ClCompile>
   </ItemGroup>
