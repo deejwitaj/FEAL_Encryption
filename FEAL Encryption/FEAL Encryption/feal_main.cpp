@@ -13,17 +13,18 @@ int main(int argc, char** argv)
     return -1;
   }
 
-  Mat image;
-  image = imread(argv[1], CV_LOAD_IMAGE_COLOR);   // Read the file
+  Mat unencryptedImg, encryptedImg;
+  unencryptedImg = imread(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
+  encryptedImg = unencryptedImg;
 
-  if (!image.data)                              // Check for invalid input
+  if (!encryptedImg.data || !unencryptedImg.data)                              // Check for invalid input
   {
     cout << "Could not open or find the image" << std::endl;
     return -1;
   }
 
   namedWindow("Display window", WINDOW_AUTOSIZE);// Create a window for display.
-  imshow("Display window", image);                   // Show our image inside it.
+  imshow("Display window", unencryptedImg);                   // Show our image inside it.
 
   waitKey(0);                                          // Wait for a keystroke in the window
   return 0;
