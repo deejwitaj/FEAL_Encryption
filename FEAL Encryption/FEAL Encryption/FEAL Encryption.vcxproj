@@ -132,6 +132,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="feal_main.cpp" />
+    <ClCompile Include="SBox.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SBox.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
