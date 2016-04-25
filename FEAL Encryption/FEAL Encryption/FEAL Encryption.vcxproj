@@ -132,9 +132,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="feal_main.cpp" />
+    <ClCompile Include="FFunction.cpp" />
     <ClCompile Include="SBox.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="FFunction.h" />
     <ClInclude Include="SBox.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

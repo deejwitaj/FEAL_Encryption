@@ -14,8 +14,10 @@
       <Filter>Image Loader</Filter>
     </ClCompile>
     <ClCompile Include="SBox.cpp" />
+    <ClCompile Include="FFunction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SBox.h" />
+    <ClInclude Include="FFunction.h" />
   </ItemGroup>
 </Project>
