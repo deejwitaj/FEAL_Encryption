@@ -133,6 +133,11 @@
   <ItemGroup>
     <ClCompile Include="feal_main.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FEALUtilityLib\FEALUtilityLib.vcxproj">
+      <Project>{0f0eb1e1-261b-45be-91c1-b7ea4788104f}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
