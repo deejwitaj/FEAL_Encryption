@@ -35,7 +35,7 @@ namespace FealUtilities
   with alpha 0 and 1 being AB and CD respectively
   while alpha 2 and 3 will be AC and BD, respectively
   */
-  Mat GetF(Mat i_partialImg, Mat i_key)
+  Mat GetF(Mat i_partialImg, Mat i_key, FType ft)
   {
     using namespace std;
 
