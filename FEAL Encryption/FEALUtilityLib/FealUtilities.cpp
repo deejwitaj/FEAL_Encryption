@@ -14,15 +14,50 @@ unsigned char GetS(unsigned char i_A, unsigned char i_B, int i_Type)
 
 namespace FealUtilities
 {
+	/*! F function used in the key schedule part of the FEAL algorithm.
+	*/
+	unsigned _int32 GetFk(unsigned __int32 i_A, unsigned __int32 i_B)
+	{
+		// Split i_A into 1 byte chunks
+		unsigned char a0 = i_A && 0xFF;
+		unsigned char a1 = i_A && 0xFF00 >> 8;
+		unsigned char a2 = i_A && 0xFF0000 >> 16;
+		unsigned char a3 = i_A && 0xFF000000 >> 24;
+
+		// Split i_B into 1 byte chunks
+		unsigned char b0 = i_B && 0xFF;
+		unsigned char b1 = i_B && 0xFF00 >> 8;
+		unsigned char b2 = i_B && 0xFF0000 >> 16;
+		unsigned char b3 = i_B && 0xFF000000 >> 24;
+
+		// Perform Fk algorithm
+		unsigned char a0a1xor = a0 ^ a1;
+		unsigned char a2a3xor = a2 ^ a3;
+
+		unsigned char out1 = GetS(a0a1xor, b0 ^ a2a3xor, 1);
+		unsigned char out0 = GetS(a0, b2 ^ out1, 0);
+		unsigned char out2 = GetS(a2a3xor, b1 ^ out1, 0);
+		unsigned char out3 = GetS(a3, b3 ^ out2, 1);
+
+		// Combine output bytes into 32bit data structure
+		_int32 out = 0;
+		out |= out0;
+		out |= out1 << 8;
+		out |= out2 << 16;
+		out |= out3 << 24;
+
+		return out;
+	}
+
 	/*
 	The format of the partial image will be 2x2 bytes:
-	AB
-	CD
-	with alpha 0 and 1 being A and B respectively
-	while alpha 2 and 3 will be C and D, respectively
+		AB
+		CD
+		with alpha 0 and 1 being A and B respectively
+		while alpha 2 and 3 will be C and D, respectively
 
-	@param i_partialImg 32-bit block of the image
-	@param i_key 16-bit key block
+		@param i_partialImg 32-bit block of the image
+		@param i_key 16-bit key block
 	*/
 	Mat GetF(Mat i_partialImg, Mat i_key)
 	{
