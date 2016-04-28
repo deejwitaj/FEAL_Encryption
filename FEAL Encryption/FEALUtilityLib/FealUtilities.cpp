@@ -163,6 +163,6 @@ namespace FealUtilities
   //Represents the DRE stage of the ciphertext
   Mat RandomizeData(Mat i_image, Mat i_key)
   {
-    return GetF(i_image, i_key, K);
+    return GetF(i_image, i_key);
   }
 }
