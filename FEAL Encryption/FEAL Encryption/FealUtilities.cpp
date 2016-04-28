@@ -35,8 +35,8 @@ namespace FealUtilities
   The format of the partial image will be 2x2 bytes:
   AB
   CD
-  with alpha 0 and 1 being AB and CD respectively
-  while alpha 2 and 3 will be AC and BD, respectively
+  with alpha 0 and 1 being A and B respectively
+  while alpha 2 and 3 will be C and D, respectively
   */
   Mat GetF(Mat i_partialImg, Mat i_key, FType ft)
   {
@@ -83,5 +83,62 @@ namespace FealUtilities
     out.at<unsigned char*>(1, 1) = lv3.at<unsigned char*>(0, 0);
 
     return out;
+  }
+
+  /*
+  This gate branch will treat the left half of the image as the L portion and
+  the right half of the image as the R portion, and will return these two halves
+  into the passed in L and R mats.
+  The L and R inputs refer to the L and R during encryption and decryption in the
+  Ciphertext image of page 8 of the FEAL.pdf
+  */
+  bool GetInputGateBranch(Mat i_image, Mat o_L, Mat o_R)
+  {
+    auto const imgS = i_image.size();
+
+    if (imgS.width*imgS.height != GATE_IMG_SIZE)
+    {
+      std::cout << "Image size is not appropriate for Gate Branch" << std::endl;
+      return false;
+    }
+
+    if (o_L.size() != o_R.size())
+    {
+      std::cout << "Image halves provided are not of equal size" << std::endl;
+      return false;
+    }
+
+    auto const halfW = imgS.width / 2;
+    for (int i = 0; i < imgS.height; i++)
+    {
+      for (int j = 0; j < imgS.width; j++)
+      {
+        if (j < halfW)
+          o_L.at<unsigned char*>(i, j) = i_image.at<unsigned char*>(i, j);
+        else
+          o_L.at<unsigned char*>(i, (j - halfW)) = i_image.at<unsigned char*>(i, j);
+      }
+    }
+
+    cv::bitwise_xor(o_L, o_R, o_R);
+
+    return true;
+  }
+
+  /*
+  The L and R inputs refer to the L and R during encryption and decryption in the
+  Ciphertext image of page 8 of the FEAL.pdf
+  */
+  bool GetOutputGateBranch(Mat io_L, Mat io_R)
+  {
+    if (io_L.size() != io_R.size())
+    {
+      std::cout << "Image halves provided are not of equal size" << std::endl;
+      return false;
+    }
+
+    cv::bitwise_xor(io_R, io_L, io_L);
+
+    return true;
   }
 }
