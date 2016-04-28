@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FEAL Encryption", "FEAL Encryption\FEAL Encryption.vcxproj", "{998A9B71-557A-4F4E-8980-EEA648D291C1}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FEALKeyScheduler", "FEALKeyScheduler\FEALKeyScheduler.vcxproj", "{0F0EB1E1-261B-45BE-91C1-B7EA4788104F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FEALUtilityLib", "FEALUtilityLib\FEALUtilityLib.vcxproj", "{0F0EB1E1-261B-45BE-91C1-B7EA4788104F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

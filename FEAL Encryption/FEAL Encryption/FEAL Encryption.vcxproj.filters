@@ -13,13 +13,5 @@
     <ClCompile Include="feal_main.cpp">
       <Filter>Image Loader</Filter>
     </ClCompile>
-    <ClCompile Include="SBox.cpp" />
-    <ClCompile Include="FFunction.cpp" />
-    <ClCompile Include="FealUtilities.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="SBox.h" />
-    <ClInclude Include="FFunction.h" />
-    <ClInclude Include="FealUtilities.h" />
   </ItemGroup>
 </Project>
