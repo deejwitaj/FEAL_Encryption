@@ -37,12 +37,12 @@ namespace FealUtilities
 		// Splitting out the "alpha" parameter into 4 bytes
 		auto alpha0 = i_partialImg.at<unsigned char>(0, 0);
 		auto alpha1 = i_partialImg.at<unsigned char>(0, 1);
-		auto alpha2 = i_partialImg.at<unsigned char>(1, 0);
-		auto alpha3 = i_partialImg.at<unsigned char>(1, 1);
+		auto alpha2 = i_partialImg.at<unsigned char>(0, 2);
+		auto alpha3 = i_partialImg.at<unsigned char>(0, 3);
 
 		// Splitting out the "beta" parameter into 2 bytes
 		auto beta0 = i_key.at<unsigned char>(0, 0);
-		auto beta1 = i_key.at<unsigned char>(0, 0);
+		auto beta1 = i_key.at<unsigned char>(0, 1);
 
 		// Represents the output of the four levels in the F function
 		unsigned char lv0, lv1, lv2, lv3;
@@ -59,7 +59,7 @@ namespace FealUtilities
 		lv0 = GetS(lv0, lv1, 0);
 
 		// 2x2 matrix where each element is a unsigned char
-		Mat out(2, 2, CV_8UC1);
+		Mat out(1, 4, CV_8UC1);
 		out.at<unsigned char>(0, 0) = lv0;
 		out.at<unsigned char>(0, 1) = lv1;
 		out.at<unsigned char>(1, 0) = lv2;
@@ -99,7 +99,7 @@ namespace FealUtilities
         if (j < halfW)
           o_L.at<unsigned char*>(i, j) = i_image.at<unsigned char*>(i, j);
         else
-          o_L.at<unsigned char*>(i, (j - halfW)) = i_image.at<unsigned char*>(i, j);
+          o_R.at<unsigned char*>(i, (j - halfW)) = i_image.at<unsigned char*>(i, j);
       }
     }
 
@@ -128,6 +128,6 @@ namespace FealUtilities
   //Represents the DRE stage of the ciphertext
   Mat RandomizeData(Mat i_image, Mat i_key)
   {
-    return GetF(i_image, i_key, K);
+    return GetF(i_image, i_key);
   }
 }
