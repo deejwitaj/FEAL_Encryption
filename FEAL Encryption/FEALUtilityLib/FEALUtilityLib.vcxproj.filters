@@ -24,7 +24,7 @@
     <ClInclude Include="KeyScheduler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\FEAL Encryption\FealUtilities.h">
+    <ClInclude Include="FealUtilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,7 +35,7 @@
     <ClCompile Include="KeyScheduler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\FEAL Encryption\FealUtilities.cpp">
+    <ClCompile Include="FealUtilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
