@@ -7,6 +7,7 @@ using namespace cv;
 
 namespace FealUtilities
 {
+  void Crypt(Mat i_image, Mat i_key, bool i_bDecryption);
   Mat GetF(Mat i_partialImg, Mat i_key);
   bool GetInputGateBranch(Mat i_image, Mat o_L, Mat o_R);
   bool GetOutputGateBranch(Mat io_L, Mat io_R);
