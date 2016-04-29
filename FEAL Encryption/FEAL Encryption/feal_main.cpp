@@ -43,6 +43,18 @@ int main(int argc, char** argv)
   namedWindow("Decrypted Window", WINDOW_AUTOSIZE);
   imshow("Decrypted Window", unencryptedImg);
 
+  waitKey(0);                                        // Wait for a keystroke in the window
+
+  FealUtilities::Crypt(unencryptedImg, key, false);
+  namedWindow("Encrypted window2", WINDOW_AUTOSIZE);
+  imshow("Encrypted window2", unencryptedImg);
+
+  waitKey(0);
+
+  FealUtilities::Crypt(unencryptedImg, key, true);
+  namedWindow("Decrypted Window2", WINDOW_AUTOSIZE);
+  imshow("Decrypted Window2", unencryptedImg);
+
   waitKey(0);
   return 0;
 }

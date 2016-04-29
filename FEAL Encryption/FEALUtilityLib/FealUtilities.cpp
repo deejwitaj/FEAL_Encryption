@@ -274,7 +274,7 @@ namespace FealUtilities
 
     //Input Gate Branch
     Mat L(1, 4, CV_8UC1);
-    Mat R(L);
+    Mat R(1, 4, CV_8UC1);
     GetLR(i_image, L, R, i_bDecryption);
     cv::bitwise_xor(L, R, R);
 
@@ -288,8 +288,16 @@ namespace FealUtilities
     auto halfW = cryptImg.size().width / 2;
     for (int i = 0; i < halfW; i++)
     {
-      cryptImg.at<unsigned char>(0, i) = L.at<unsigned char>(0, i);
-      cryptImg.at<unsigned char>(0, i + halfW) = R.at<unsigned char>(0, i);
+      if (i_bDecryption)
+      {
+        cryptImg.at<unsigned char>(0, i + halfW) = L.at<unsigned char>(0, i);
+        cryptImg.at<unsigned char>(0, i) = R.at<unsigned char>(0, i);
+      }
+      else
+      {
+        cryptImg.at<unsigned char>(0, i) = L.at<unsigned char>(0, i);
+        cryptImg.at<unsigned char>(0, i + halfW) = R.at<unsigned char>(0, i);
+      }
     }
 
     //Output
