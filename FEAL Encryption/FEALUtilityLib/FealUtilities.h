@@ -12,6 +12,7 @@ namespace FealUtilities
   bool GetOutputGateBranch(Mat io_L, Mat io_R);
   Mat RandomizeData(Mat i_image, Mat key, bool i_bDecrypting);
   void GetLR(Mat i_image, Mat o_L, Mat o_R, bool i_bDecrypting);
+	unsigned _int32 GetFk(unsigned __int32 i_A, unsigned __int32 i_B);
 }
 
 #endif //INC_21EA6DA865E54A3AA9B75B140EAC84BE
