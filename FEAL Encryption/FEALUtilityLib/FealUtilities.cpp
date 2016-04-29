@@ -49,7 +49,32 @@ namespace FealUtilities
 		return out;
 	}
 
-	/*
+  void Crypt(Mat i_image, Mat i_key, bool i_bDecryption)
+  {
+    Mat imgChunk(1, 8, CV_8UC1);
+    auto size = imgChunk.size();
+    for (int i = 0; i < size.height; i++)
+    {
+      int j = 0;
+      while (j < size.width)
+      {
+        for (int k = 0; k < 8; k++)
+        {
+          imgChunk.at<unsigned char*>(i, k) = i_image.at<unsigned char*>(i, j);
+          j++;
+        }
+        Mat encryptedChunk = RandomizeData(imgChunk, i_key, i_bDecryption);
+        j -= 8;
+        for (int k = 0; k < 8; k++)
+        {
+          i_image.at<unsigned char*>(i, j) = imgChunk.at<unsigned char*>(i, k);
+          j++;
+        }
+      }
+    }
+  }
+
+  /*
 	The format of the partial image will be 2x2 bytes:
 		AB
 		CD
