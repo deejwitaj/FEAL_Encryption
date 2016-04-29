@@ -288,8 +288,8 @@ namespace FealUtilities
     auto halfW = cryptImg.size().width / 2;
     for (int i = 0; i < halfW; i++)
     {
-      cryptImg.at<unsigned char>(0, i) = R.at<unsigned char>(0, i);
-      cryptImg.at<unsigned char>(0, i + halfW) = L.at<unsigned char>(0, i);
+      cryptImg.at<unsigned char>(0, i) = L.at<unsigned char>(0, i);
+      cryptImg.at<unsigned char>(0, i + halfW) = R.at<unsigned char>(0, i);
     }
 
     //Output
