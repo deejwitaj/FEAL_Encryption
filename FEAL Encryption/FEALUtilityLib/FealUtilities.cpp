@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-static const int GATE_IMG_SIZE = 64;
+static const int GATE_IMG_SIZE = 4;
 
 //! Substitution box (S-box) function that performs a substitution commonly used in cryptography.
 //! URL: https://en.wikipedia.org/wiki/S-box
@@ -49,7 +49,32 @@ namespace FealUtilities
 		return out;
 	}
 
-	/*
+  void Crypt(Mat i_image, Mat i_key, bool i_bDecryption)
+  {
+    Mat imgChunk(1, 8, CV_8UC1);
+    auto size = imgChunk.size();
+    for (int i = 0; i < size.height; i++)
+    {
+      int j = 0;
+      while (j < size.width)
+      {
+        for (int k = 0; k < 8; k++)
+        {
+          imgChunk.at<unsigned char*>(i, k) = i_image.at<unsigned char*>(i, j);
+          j++;
+        }
+        Mat encryptedChunk = RandomizeData(imgChunk, i_key, i_bDecryption);
+        j -= 8;
+        for (int k = 0; k < 8; k++)
+        {
+          i_image.at<unsigned char*>(i, j) = imgChunk.at<unsigned char*>(i, k);
+          j++;
+        }
+      }
+    }
+  }
+
+  /*
 	The format of the partial image will be 2x2 bytes:
 		AB
 		CD
@@ -72,16 +97,18 @@ namespace FealUtilities
 		// Splitting out the "alpha" parameter into 4 bytes
 		auto alpha0 = i_partialImg.at<unsigned char>(0, 0);
 		auto alpha1 = i_partialImg.at<unsigned char>(0, 1);
-		auto alpha2 = i_partialImg.at<unsigned char>(1, 0);
-		auto alpha3 = i_partialImg.at<unsigned char>(1, 1);
+		auto alpha2 = i_partialImg.at<unsigned char>(0, 2);
+		auto alpha3 = i_partialImg.at<unsigned char>(0, 3);
 
 		// Splitting out the "beta" parameter into 2 bytes
 		auto beta0 = i_key.at<unsigned char>(0, 0);
-		auto beta1 = i_key.at<unsigned char>(0, 0);
+		auto beta1 = i_key.at<unsigned char>(0, 1);
 
 		// Represents the output of the four levels in the F function
 		unsigned char lv0, lv1, lv2, lv3;
 
+    lv0 = alpha0;
+    lv3 = alpha3;
 		lv1 = alpha1 ^ beta0;
 		lv1 = lv1 ^ alpha0;
 		lv2 = alpha2 ^ beta1;
@@ -94,11 +121,11 @@ namespace FealUtilities
 		lv0 = GetS(lv0, lv1, 0);
 
 		// 2x2 matrix where each element is a unsigned char
-		Mat out(2, 2, CV_8UC1);
+		Mat out(1, 4, CV_8UC1);
 		out.at<unsigned char>(0, 0) = lv0;
 		out.at<unsigned char>(0, 1) = lv1;
-		out.at<unsigned char>(1, 0) = lv2;
-		out.at<unsigned char>(1, 1) = lv3;
+		out.at<unsigned char>(0, 2) = lv2;
+		out.at<unsigned char>(0, 3) = lv3;
 
 		return out;
 	}
@@ -198,7 +225,7 @@ namespace FealUtilities
         if (j < halfW)
           o_L.at<unsigned char*>(i, j) = i_image.at<unsigned char*>(i, j);
         else
-          o_L.at<unsigned char*>(i, (j - halfW)) = i_image.at<unsigned char*>(i, j);
+          o_R.at<unsigned char*>(i, (j - halfW)) = i_image.at<unsigned char*>(i, j);
       }
     }
 
@@ -223,10 +250,126 @@ namespace FealUtilities
 
     return true;
   }
+  /*
+  Represents the Data Randomization stage of the ciphertext
 
-  //Represents the DRE stage of the ciphertext
-  Mat RandomizeData(Mat i_image, Mat i_key)
+  @param i_image the image chunk being encrypted/decrypted
+  @param i_inputKey the four keys being used for the input of the data randomization stage
+  @param i_outputKey the four keys being used for the output of the data randomization stage
+  @param i_key1 the key used for DRE1 stage
+  @param i_key2 the key used for DRE2 stage
+  @param i_key3 the key used for DRE3 stage
+  @param i_key4 the key used for DRE4 stage
+  */
+  Mat RandomizeData(Mat i_image, Mat i_key, bool i_bDecryption)
   {
-    return GetF(i_image, i_key);
+    //Input
+    InputImage(i_image, i_key);
+
+    //Input Gate Branch
+    Mat L(1, 4, CV_8UC1);
+    Mat R(L);
+    GetLR(i_image, L, R, i_bDecryption);
+    cv::bitwise_xor(L, R, R);
+
+    //DRE stage
+    DoDRE(L, R, i_key, i_bDecryption);
+
+    //Output Gate Branch: After this gate, the left side is now the right side of image
+    //and the right side of image is now the left side
+    cv::bitwise_xor(L, R, L);
+    Mat cryptImg(1, 8, CV_8UC1);
+    auto halfW = cryptImg.size().width / 2;
+    for (int i = 0; i < halfW; i++)
+    {
+      cryptImg.at<unsigned char*>(0, i) = L.at<unsigned char*>(0, i);
+      cryptImg.at<unsigned char*>(0, i + halfW) = R.at<unsigned char*>(0, i);
+    }
+
+    //Output
+    OutputImage(cryptImg, i_key);
+
+    return cryptImg;
+  }
+
+  void InputImage(Mat i_image, Mat i_key)
+  {
+    Mat inputKey(1, 8, CV_8UC1);
+    inputKey.at<unsigned char*>(0, 0) = i_key.at<unsigned char*>(0, 8);
+    inputKey.at<unsigned char*>(0, 1) = i_key.at<unsigned char*>(0, 9);
+    inputKey.at<unsigned char*>(0, 2) = i_key.at<unsigned char*>(0, 10);
+    inputKey.at<unsigned char*>(0, 3) = i_key.at<unsigned char*>(0, 11);
+    inputKey.at<unsigned char*>(0, 4) = i_key.at<unsigned char*>(0, 12);
+    inputKey.at<unsigned char*>(0, 5) = i_key.at<unsigned char*>(0, 13);
+    inputKey.at<unsigned char*>(0, 6) = i_key.at<unsigned char*>(0, 14);
+    inputKey.at<unsigned char*>(0, 7) = i_key.at<unsigned char*>(0, 15);
+    cv::bitwise_xor(i_image, inputKey, i_image);
+  }
+
+  void OutputImage(Mat i_image, Mat i_key)
+  {
+    Mat outputKey(1, 8, CV_8UC1);
+    outputKey.at<unsigned char*>(0, 0) = i_key.at<unsigned char*>(0, 16);
+    outputKey.at<unsigned char*>(0, 1) = i_key.at<unsigned char*>(0, 17);
+    outputKey.at<unsigned char*>(0, 2) = i_key.at<unsigned char*>(0, 18);
+    outputKey.at<unsigned char*>(0, 3) = i_key.at<unsigned char*>(0, 19);
+    outputKey.at<unsigned char*>(0, 4) = i_key.at<unsigned char*>(0, 20);
+    outputKey.at<unsigned char*>(0, 5) = i_key.at<unsigned char*>(0, 21);
+    outputKey.at<unsigned char*>(0, 6) = i_key.at<unsigned char*>(0, 22);
+    outputKey.at<unsigned char*>(0, 7) = i_key.at<unsigned char*>(0, 23);
+    cv::bitwise_xor(i_image, outputKey, i_image);
+  }
+
+  void DoDRE(Mat L, Mat R, Mat i_key, bool i_bDecryption)
+  {
+    Mat k0(0, 2, CV_8UC1);
+    Mat k1(0, 2, CV_8UC1);
+    Mat k2(0, 2, CV_8UC1);
+    Mat k3(0, 2, CV_8UC1);
+    k0.at<unsigned char*>(0, 0) = i_key.at<unsigned char*>(0, 0);
+    k0.at<unsigned char*>(0, 1) = i_key.at<unsigned char*>(0, 1);
+    k1.at<unsigned char*>(0, 0) = i_key.at<unsigned char*>(0, 2);
+    k1.at<unsigned char*>(0, 1) = i_key.at<unsigned char*>(0, 3);
+    k2.at<unsigned char*>(0, 0) = i_key.at<unsigned char*>(0, 4);
+    k2.at<unsigned char*>(0, 1) = i_key.at<unsigned char*>(0, 5);
+    k3.at<unsigned char*>(0, 0) = i_key.at<unsigned char*>(0, 6);
+    k3.at<unsigned char*>(0, 1) = i_key.at<unsigned char*>(0, 7);
+    if (!i_bDecryption)
+    {
+      cv::bitwise_xor(L, GetF(R, k0), L);
+      cv::bitwise_xor(R, GetF(L, k1), R);
+      cv::bitwise_xor(L, GetF(R, k2), L);
+      cv::bitwise_xor(R, GetF(L, k3), R);
+    }
+    else
+    {
+      cv::bitwise_xor(L, GetF(R, k3), L);
+      cv::bitwise_xor(R, GetF(L, k2), R);
+      cv::bitwise_xor(L, GetF(R, k1), L);
+      cv::bitwise_xor(R, GetF(L, k0), R);
+    }
+  }
+
+  void GetLR(Mat i_image, Mat o_L, Mat o_R, bool i_bDecrypting)
+  {
+    Mat L(1, 4, CV_8UC1);
+    Mat R(L);
+    auto halfWidth = i_image.size().width / 2;
+    for (int i = 0; i < halfWidth; i++)
+    {
+      L.at<unsigned char*>(0, i) = i_image.at<unsigned char*>(0, i);
+      R.at<unsigned char*>(0, i) = i_image.at<unsigned char*>(0, i + halfWidth);
+    }
+
+    if (i_bDecrypting)
+    {
+      o_L = R;
+      o_R = L;
+    }
+    else
+    {
+      o_L = L;
+      o_R = R;
+    }
   }
 }
