@@ -82,6 +82,8 @@ namespace FealUtilities
 		// Represents the output of the four levels in the F function
 		unsigned char lv0, lv1, lv2, lv3;
 
+    lv0 = alpha0;
+    lv3 = alpha3;
 		lv1 = alpha1 ^ beta0;
 		lv1 = lv1 ^ alpha0;
 		lv2 = alpha2 ^ beta1;
@@ -173,6 +175,36 @@ namespace FealUtilities
   Mat RandomizeData(Mat i_image, Mat i_key, bool i_bDecryption)
   {
     //Input
+    InputImage(i_image, i_key);
+
+    //Input Gate Branch
+    Mat L(1, 4, CV_8UC1);
+    Mat R(L);
+    GetLR(i_image, L, R, i_bDecryption);
+    cv::bitwise_xor(L, R, R);
+
+    //DRE stage
+    DoDRE(L, R, i_key, i_bDecryption);
+
+    //Output Gate Branch: After this gate, the left side is now the right side of image
+    //and the right side of image is now the left side
+    cv::bitwise_xor(L, R, L);
+    Mat cryptImg(1, 8, CV_8UC1);
+    auto halfW = cryptImg.size().width / 2;
+    for (int i = 0; i < halfW; i++)
+    {
+      cryptImg.at<unsigned char*>(0, i) = L.at<unsigned char*>(0, i);
+      cryptImg.at<unsigned char*>(0, i + halfW) = R.at<unsigned char*>(0, i);
+    }
+
+    //Output
+    OutputImage(cryptImg, i_key);
+
+    return cryptImg;
+  }
+
+  void InputImage(Mat i_image, Mat i_key)
+  {
     Mat inputKey(1, 8, CV_8UC1);
     inputKey.at<unsigned char*>(0, 0) = i_key.at<unsigned char*>(0, 8);
     inputKey.at<unsigned char*>(0, 1) = i_key.at<unsigned char*>(0, 9);
@@ -183,14 +215,24 @@ namespace FealUtilities
     inputKey.at<unsigned char*>(0, 6) = i_key.at<unsigned char*>(0, 14);
     inputKey.at<unsigned char*>(0, 7) = i_key.at<unsigned char*>(0, 15);
     cv::bitwise_xor(i_image, inputKey, i_image);
+  }
 
-    //Input Gate Branch
-    Mat L(1, 4, CV_8UC1);
-    Mat R(L);
-    GetLR(i_image, L, R, i_bDecryption);
-    cv::bitwise_xor(L, R, R);
+  void OutputImage(Mat i_image, Mat i_key)
+  {
+    Mat outputKey(1, 8, CV_8UC1);
+    outputKey.at<unsigned char*>(0, 0) = i_key.at<unsigned char*>(0, 16);
+    outputKey.at<unsigned char*>(0, 1) = i_key.at<unsigned char*>(0, 17);
+    outputKey.at<unsigned char*>(0, 2) = i_key.at<unsigned char*>(0, 18);
+    outputKey.at<unsigned char*>(0, 3) = i_key.at<unsigned char*>(0, 19);
+    outputKey.at<unsigned char*>(0, 4) = i_key.at<unsigned char*>(0, 20);
+    outputKey.at<unsigned char*>(0, 5) = i_key.at<unsigned char*>(0, 21);
+    outputKey.at<unsigned char*>(0, 6) = i_key.at<unsigned char*>(0, 22);
+    outputKey.at<unsigned char*>(0, 7) = i_key.at<unsigned char*>(0, 23);
+    cv::bitwise_xor(i_image, outputKey, i_image);
+  }
 
-    //DRE stage
+  void DoDRE(Mat L, Mat R, Mat i_key, bool i_bDecryption)
+  {
     Mat k0(0, 2, CV_8UC1);
     Mat k1(0, 2, CV_8UC1);
     Mat k2(0, 2, CV_8UC1);
@@ -217,31 +259,6 @@ namespace FealUtilities
       cv::bitwise_xor(L, GetF(R, k1), L);
       cv::bitwise_xor(R, GetF(L, k0), R);
     }
-
-    //Output Gate Branch: After this gate, the left side is now the right side of image
-    //and the right side of image is now the left side
-    cv::bitwise_xor(L, R, L);
-    Mat cryptImg(1, 8, CV_8UC1);
-    auto halfW = cryptImg.size().width / 2;
-    for (int i = 0; i < halfW; i++)
-    {
-      cryptImg.at<unsigned char*>(0, i) = L.at<unsigned char*>(0, i);
-      cryptImg.at<unsigned char*>(0, i + halfW) = R.at<unsigned char*>(0, i);
-    }
-
-    //Output
-    Mat outputKey(1, 8, CV_8UC1);
-    outputKey.at<unsigned char*>(0, 0) = i_key.at<unsigned char*>(0, 16);
-    outputKey.at<unsigned char*>(0, 1) = i_key.at<unsigned char*>(0, 17);
-    outputKey.at<unsigned char*>(0, 2) = i_key.at<unsigned char*>(0, 18);
-    outputKey.at<unsigned char*>(0, 3) = i_key.at<unsigned char*>(0, 19);
-    outputKey.at<unsigned char*>(0, 4) = i_key.at<unsigned char*>(0, 20);
-    outputKey.at<unsigned char*>(0, 5) = i_key.at<unsigned char*>(0, 21);
-    outputKey.at<unsigned char*>(0, 6) = i_key.at<unsigned char*>(0, 22);
-    outputKey.at<unsigned char*>(0, 7) = i_key.at<unsigned char*>(0, 23);
-    cv::bitwise_xor(cryptImg, outputKey, cryptImg);
-
-    return cryptImg;
   }
 
   void GetLR(Mat i_image, Mat o_L, Mat o_R, bool i_bDecrypting)
