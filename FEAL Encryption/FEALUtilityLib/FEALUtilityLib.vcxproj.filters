@@ -21,18 +21,12 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="KeyScheduler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FealUtilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="KeyScheduler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FealUtilities.cpp">

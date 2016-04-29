@@ -19,25 +19,25 @@ namespace FealUtilities
 	unsigned _int32 GetFk(unsigned __int32 i_A, unsigned __int32 i_B)
 	{
 		// Split i_A into 1 byte chunks
-		unsigned char a0 = i_A && 0xFF;
-		unsigned char a1 = i_A && 0xFF00 >> 8;
-		unsigned char a2 = i_A && 0xFF0000 >> 16;
-		unsigned char a3 = i_A && 0xFF000000 >> 24;
+		unsigned __int32 a0 = i_A && 0xFF;
+		unsigned __int32 a1 = (i_A && 0xFF00) >> 8;
+		unsigned __int32 a2 = (i_A && 0xFF0000) >> 16;
+		unsigned __int32 a3 = (i_A && 0xFF000000) >> 24;
 
 		// Split i_B into 1 byte chunks
-		unsigned char b0 = i_B && 0xFF;
-		unsigned char b1 = i_B && 0xFF00 >> 8;
-		unsigned char b2 = i_B && 0xFF0000 >> 16;
-		unsigned char b3 = i_B && 0xFF000000 >> 24;
+		unsigned __int32 b0 = i_B && 0xFF;
+		unsigned __int32 b1 = (i_B && 0xFF00) >> 8;
+		unsigned __int32 b2 = (i_B && 0xFF0000) >> 16;
+		unsigned __int32 b3 = (i_B && 0xFF000000) >> 24;
 
 		// Perform Fk algorithm
-		unsigned char a0a1xor = a0 ^ a1;
-		unsigned char a2a3xor = a2 ^ a3;
+		unsigned __int32 a0a1xor = a0 ^ a1;
+		unsigned __int32 a2a3xor = a2 ^ a3;
 
-		unsigned char out1 = GetS(a0a1xor, b0 ^ a2a3xor, 1);
-		unsigned char out0 = GetS(a0, b2 ^ out1, 0);
-		unsigned char out2 = GetS(a2a3xor, b1 ^ out1, 0);
-		unsigned char out3 = GetS(a3, b3 ^ out2, 1);
+		unsigned __int32 out1 = GetS(a0a1xor, b0 ^ a2a3xor, 1);
+		unsigned __int32 out0 = GetS(a0, b2 ^ out1, 0);
+		unsigned __int32 out2 = GetS(a2a3xor, b1 ^ out1, 0);
+		unsigned __int32 out3 = GetS(a3, b3 ^ out2, 1);
 
 		// Combine output bytes into 32bit data structure
 		_int32 out = 0;
@@ -99,6 +99,70 @@ namespace FealUtilities
 		out.at<unsigned char>(0, 1) = lv1;
 		out.at<unsigned char>(1, 0) = lv2;
 		out.at<unsigned char>(1, 1) = lv3;
+
+		return out;
+	}
+
+	// Reads in a 64-bit key and returns 192 bits (12 intermediate keys of length 16 bits)
+	// @returns A Mat object consisting of 8-byte chunks
+	Mat PerformKeyScheduling(unsigned _int64 i_Key)
+	{
+		unsigned _int32 a0 = i_Key && 0xFFFFFFFF;
+		unsigned _int32 b0 = i_Key >> 32;
+
+		unsigned _int32 k0k1 = GetFk(a0, b0);
+
+		unsigned _int32 a1 = b0;
+		unsigned _int32 b1 = k0k1;
+
+		unsigned _int32 k2k3 = GetFk(a1, a0 ^ b1);
+
+		unsigned _int32 a2 = b1;
+		unsigned _int32 b2 = k2k3;
+
+		unsigned _int32 k4k5 = GetFk(a2, a1 ^ b2);
+
+		unsigned _int32 a3 = b2;
+		unsigned _int32 b3 = k4k5;
+
+		unsigned _int32 k6k7 = GetFk(a3, a2 ^ b3);
+
+		unsigned _int32 a4 = b3;
+		unsigned _int32 b4 = k6k7;
+
+		unsigned _int32 k8k9 = GetFk(a4, a3 ^ b4);
+
+		unsigned _int32 a5 = b4;
+		unsigned _int32 b5 = k8k9;
+
+		unsigned _int32 k10k11 = GetFk(a5, a4 ^ b5);
+
+		// Output containing the intermediate keys
+		Mat out(1, 24, CV_8UC1);
+		out.at<unsigned char>(0, 0) = k0k1 && 0xFF;
+		out.at<unsigned char>(0, 1) = (k0k1 && 0xFF00) >> 8;
+		out.at<unsigned char>(0, 2) = (k0k1 && 0xFF0000) >> 16;
+		out.at<unsigned char>(0, 3) = (k0k1 && 0xFF000000) >> 24;
+		out.at<unsigned char>(0, 4) = k2k3 && 0xFF;
+		out.at<unsigned char>(0, 5) = (k2k3 && 0xFF00) >> 8;
+		out.at<unsigned char>(0, 6) = (k2k3 && 0xFF0000) >> 16;
+		out.at<unsigned char>(0, 7) = (k2k3 && 0xFF000000) >> 24;
+		out.at<unsigned char>(0, 8) = k4k5 && 0xFF;
+		out.at<unsigned char>(0, 9) = (k4k5 && 0xFF00) >> 8;
+		out.at<unsigned char>(0, 10) = (k4k5 && 0xFF0000) >> 16;
+		out.at<unsigned char>(0, 11) = (k4k5 && 0xFF000000) >> 24;
+		out.at<unsigned char>(0, 12) = k6k7 && 0xFF;
+		out.at<unsigned char>(0, 13) = (k6k7 && 0xFF00) >> 8;
+		out.at<unsigned char>(0, 14) = (k6k7 && 0xFF0000) >> 16;
+		out.at<unsigned char>(0, 15) = (k6k7 && 0xFF000000) >> 24;
+		out.at<unsigned char>(0, 16) = k8k9 && 0xFF;
+		out.at<unsigned char>(0, 17) = (k8k9 && 0xFF00) >> 8;
+		out.at<unsigned char>(0, 18) = (k8k9 && 0xFF0000) >> 16;
+		out.at<unsigned char>(0, 19) = (k8k9 && 0xFF000000) >> 24;
+		out.at<unsigned char>(0, 20) = k10k11 && 0xFF;
+		out.at<unsigned char>(0, 21) = (k10k11 && 0xFF00) >> 8;
+		out.at<unsigned char>(0, 22) = (k10k11 && 0xFF0000) >> 16;
+		out.at<unsigned char>(0, 23) = (k10k11 && 0xFF000000) >> 24;
 
 		return out;
 	}
